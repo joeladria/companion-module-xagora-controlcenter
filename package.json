@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "manufacturer": "X-Agora",
   "product": "Control Center",
-  "shortname": "cc",
+  "shortname": "XCC",
   "description": "See [HELP.md](./HELP.md) and [LICENSE](./LICENSE)",
   "main": "index.js",
   "scripts": {

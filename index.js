@@ -231,7 +231,7 @@ class mqtt_instance extends instance_skel {
 				type: 'textinput',
 				id: 'datastore',
 				width: 12,
-				label: 'data store URL',
+				label: 'data store (without port)',
 			},
 			{
 				type: 'textinput',
@@ -289,6 +289,22 @@ class mqtt_instance extends instance_skel {
 					this._publishMessage(topic, payload, qos, retain)
 				},
 			},
+			execute: {
+				label: 'Execute Taskflow',
+				options: [
+					{
+						type: 'dropdown',
+						label: 'Taskflow Name',
+						id: 'taskflow',
+						default: '',
+						width: 12,
+					}
+				],
+				callback: (action) => {
+					const { retain, topic, qos, payload } = action.options
+					this._publishMessage(topic, payload, qos, retain)
+				},
+			},
 		})
 	}
 
@@ -328,6 +344,48 @@ class mqtt_instance extends instance_skel {
 
 	_publishMessage(topic, payload, qos, retain) {
 		this.debug('Sending MQTT message', [topic, payload])
+
+		this.mqttClient.publish(topic, payload, { qos: qos, retain: retain })
+	}
+
+	_executeTaskflow(taskflow) {
+		// 		Execute a taskflow
+// 
+// 
+		this.debug('Attempting to execute taskflow', taskflow)
+		params = {"jsonrpc": "2.0","method": "TaskFlow.Execute","params": {"internalName": taskflow,"clienId": "companion","rpcId": 4},"id": 4}
+		url = 'http://' + datstore + ':3030/sc-datastore/projectData/taskFlow';
+
+
+// Example of answer
+// {
+// 	"jsonrpc": "2.0",
+// 	"id": 4,
+// 	"result": {
+// 		"code": 55555,
+// 		"message": "Task Flow execution command send to Commander."
+// 	}
+// }
+
+
+
+
+
+
+// Notification of end of execution of a taskflow
+//    For the moment, this notification can only been received through a MQTT topic: computer/+/software/sc-task-engine/showcontrol/taskFlow_status
+
+// {
+// 	"jsonrpc": "2.0",
+// 	"id": "26817de3-fc45-18d0-6d58-c4a1e1f21bb1",
+// 	"result": {
+// 		"method": "Task.Execute",
+// 		"code": 0,
+// 		"message": "Task executed successfully",
+// 		"data": "OK"
+// 	}
+// }
+
 
 		this.mqttClient.publish(topic, payload, { qos: qos, retain: retain })
 	}
@@ -376,6 +434,9 @@ class mqtt_instance extends instance_skel {
 	}
 
 	_updateInstanceVariables() {
+		// query for taskflows
+		// curl -H 'Content-Type: application/json' -d '{"jsonrpc": "2.0","method": "TaskFlow.Array","params": {"projectIdentifier": "test_project", "autoPopulate": true},"id": 2}' http://cc-test-01:3030/sc-datastore/projectData/taskFlow
+		// returns taskflow array
 		const vars = []
 
 		this.mqtt_topic_subscriptions.forEach((uses, key) => {
