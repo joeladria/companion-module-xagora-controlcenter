@@ -1,0 +1,27 @@
+{
+  "name": "xagora-controlcenter",
+  "version": "1.0.0",
+  "manufacturer": "X-Agora",
+  "product": "Control Center",
+  "shortname": "cc",
+  "description": "See [HELP.md](./HELP.md) and [LICENSE](./LICENSE)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joeladria/companion-module-xagora-controlcenter.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/joeladria/companion-module-xagora-controlcenter/issues"
+  },
+  "homepage": "https://github.com/joeladria/companion-module-xagora-controlcenter#readme",
+  "dependencies": {
+    "debounce-fn": "^5.0.0",
+    "mqtt": "^4.2.8",
+    "object-path": "^0.11.8"
+  }
+}
