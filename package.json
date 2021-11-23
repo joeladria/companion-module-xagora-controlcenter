@@ -20,8 +20,8 @@
   },
   "homepage": "https://github.com/joeladria/companion-module-xagora-controlcenter#readme",
   "dependencies": {
-    "debounce-fn": "^5.0.0",
-    "mqtt": "^4.2.8",
-    "object-path": "^0.11.8"
+    "debounce-fn": "^3.0.0",
+    "mqtt": "^4.2.6",
+    "object-path": "^0.11.5"
   }
 }
