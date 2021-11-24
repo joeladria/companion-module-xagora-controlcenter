@@ -296,20 +296,23 @@ class mqtt_instance extends instance_skel {
 						type: 'dropdown',
 						label: 'Taskflow Name',
 						id: 'taskflow',
+						choices: [
+							{ id: 'joelTest', label: 'joelTest' }
+						],
 						default: '',
 						width: 12,
 					}
 				],
 				callback: (action) => {
-					const { retain, topic, qos, payload } = action.options
-					this._publishMessage(topic, payload, qos, retain)
+					const { taskflow } = action.options
+					this._executeTaskflow(taskflow)
 				},
 			},
 		})
 	}
 
 	_initMqtt() {
-		this.mqttClient = mqtt.connect(this.config.protocol + this.config.broker_ip, {
+		this.mqttClient = mqtt.connect('mqtt://' + this.config.broker_ip, {
 			username: this.config.user,
 			password: this.config.password,
 		})
@@ -330,6 +333,8 @@ class mqtt_instance extends instance_skel {
 		// this.mqttClient.on('packetreceive', packet => {
 		// 	this.debug('MQTT', packet)
 		// });
+
+		
 
 		this.mqttClient.on('message', (topic, message) => {
 			try {
@@ -352,10 +357,29 @@ class mqtt_instance extends instance_skel {
 		// 		Execute a taskflow
 // 
 // 
-		this.debug('Attempting to execute taskflow', taskflow)
-		params = {"jsonrpc": "2.0","method": "TaskFlow.Execute","params": {"internalName": taskflow,"clienId": "companion","rpcId": 4},"id": 4}
-		url = 'http://' + datstore + ':3030/sc-datastore/projectData/taskFlow';
+		// this.log('debug', 'Attempting to execute taskflow : ' + taskflow)
+	
+		var body = '{"jsonrpc": "2.0","method": "TaskFlow.Execute","params": {"internalName": "'+taskflow+'","clientId": "companion","rpcId": 4},"id": 4}'
+		var url = 'http://' + this.config.datastore + ':3030/sc-datastore/projectData/taskFlow';
+		var header = {};
+		header['Content-Type'] = 'application/json'
+		var self = this;
 
+
+		var errorHandler = function (err, result) {
+			if (err !== null) {
+				self.log('error', `HTTP ${action.action.toUpperCase()} Request failed (${e.message})`)
+				self.status(self.STATUS_ERROR, result.error.code)
+			} else {
+				self.status(self.STATUS_OK)
+			}
+		}
+
+		self.system.emit('rest_put', url, body, errorHandler, header)
+
+
+		
+		this.log('debug', url.toString() + params.toString())
 
 // Example of answer
 // {
@@ -387,7 +411,7 @@ class mqtt_instance extends instance_skel {
 // }
 
 
-		this.mqttClient.publish(topic, payload, { qos: qos, retain: retain })
+		// this.mqttClient.publish(topic, payload, { qos: qos, retain: retain })
 	}
 
 	_handleMqttMessage(topic, message) {
@@ -434,9 +458,6 @@ class mqtt_instance extends instance_skel {
 	}
 
 	_updateInstanceVariables() {
-		// query for taskflows
-		// curl -H 'Content-Type: application/json' -d '{"jsonrpc": "2.0","method": "TaskFlow.Array","params": {"projectIdentifier": "test_project", "autoPopulate": true},"id": 2}' http://cc-test-01:3030/sc-datastore/projectData/taskFlow
-		// returns taskflow array
 		const vars = []
 
 		this.mqtt_topic_subscriptions.forEach((uses, key) => {
