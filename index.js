@@ -363,6 +363,7 @@ class mqtt_instance extends instance_skel {
 		var url = 'http://' + this.config.datastore + ':3030/sc-datastore/projectData/taskFlow';
 		var header = {};
 		header['Content-Type'] = 'application/json'
+		
 		var self = this;
 
 
@@ -375,11 +376,9 @@ class mqtt_instance extends instance_skel {
 			}
 		}
 
-		self.system.emit('rest_put', url, body, errorHandler, header)
+		self.system.emit('rest', url, body, errorHandler, header)
 
-
-		
-		this.log('debug', url.toString() + params.toString())
+		this.log('debug', taskflow.toString() + ' sent')
 
 // Example of answer
 // {
@@ -459,7 +458,6 @@ class mqtt_instance extends instance_skel {
 
 	_updateInstanceVariables() {
 		const vars = []
-
 		this.mqtt_topic_subscriptions.forEach((uses, key) => {
 			Object.values(uses).forEach((use) => {
 				if (use.type === 'mqtt_variable') {
