@@ -249,6 +249,53 @@ class mqtt_instance extends instance_skel {
 	}
 
 	_initActionDefinitions() {
+		// get the taskflows
+
+		// curl -H 'Content-Type: application/json' -d '' http://cc-test-01:3030/sc-datastore/projectData/taskFlow
+
+
+	
+
+		const http = require('http')
+		const data = JSON.stringify({"jsonrpc": "2.0","method": "TaskFlow.Array","params": {"projectIdentifier": this.config.topic, "autoPopulate": true},"id": 2})
+
+		const options = {
+			hostname: this.config.datastore,
+			port: 3030,
+			path: '/sc-datastore/projectData/taskFlow',
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'Content-Length': data.length
+			}
+		}
+		var tfLibrary;
+
+		const req = http.request(options, res => {
+			this.log('debug', `statusCode: ${res.statusCode}`)
+
+			res.on('data', d => {
+				// process.stdout.write(d)
+				var taskflows = JSON.parse(d);
+				console.log(taskflows.result.data);
+				
+				taskflows.result.data.forEach((element) => { tfLibrary.push( { id: element.internalName, label: element.displayName }) } );
+				
+				tfLibrary = 'hello'
+			})
+		})
+
+		req.on('error', error => {
+			console.error(error)
+		})
+	
+		// req.write(data)
+		req.end()
+
+		this.log('warn', tfLibrary)
+		// var tfLibrary = [
+		// 	{ id: 'joelTest', label: 'joelTest' }
+		// ];
 		this.setActions({
 			publish: {
 				label: 'Publish Message',
@@ -296,9 +343,7 @@ class mqtt_instance extends instance_skel {
 						type: 'dropdown',
 						label: 'Taskflow Name',
 						id: 'taskflow',
-						choices: [
-							{ id: 'joelTest', label: 'joelTest' }
-						],
+						choices: tfLibrary,
 						default: '',
 						width: 12,
 					}
@@ -334,7 +379,7 @@ class mqtt_instance extends instance_skel {
 		// 	this.debug('MQTT', packet)
 		// });
 
-		
+
 
 		this.mqttClient.on('message', (topic, message) => {
 			try {
@@ -355,21 +400,21 @@ class mqtt_instance extends instance_skel {
 
 	_executeTaskflow(taskflow) {
 		// 		Execute a taskflow
-// 
-// 
+		// 
+		// 
 		// this.log('debug', 'Attempting to execute taskflow : ' + taskflow)
-	
-		var body = '{"jsonrpc": "2.0","method": "TaskFlow.Execute","params": {"internalName": "'+taskflow+'","clientId": "companion","rpcId": 4},"id": 4}'
+
+		var body = '{"jsonrpc": "2.0","method": "TaskFlow.Execute","params": {"internalName": "' + taskflow + '","clientId": "companion","rpcId": 4},"id": 4}'
 		var url = 'http://' + this.config.datastore + ':3030/sc-datastore/projectData/taskFlow';
 		var header = {};
 		header['Content-Type'] = 'application/json'
-		
+
 		var self = this;
 
 
 		var errorHandler = function (err, result) {
 			if (err !== null) {
-				self.log('error', `HTTP ${action.action.toUpperCase()} Request failed (${e.message})`)
+				self.log('error', `HTTP Request failed (${err.message})`)
 				self.status(self.STATUS_ERROR, result.error.code)
 			} else {
 				self.status(self.STATUS_OK)
@@ -380,34 +425,31 @@ class mqtt_instance extends instance_skel {
 
 		this.log('debug', taskflow.toString() + ' sent')
 
-// Example of answer
-// {
-// 	"jsonrpc": "2.0",
-// 	"id": 4,
-// 	"result": {
-// 		"code": 55555,
-// 		"message": "Task Flow execution command send to Commander."
-// 	}
-// }
+		// Example of answer
+		// {
+		// 	"jsonrpc": "2.0",
+		// 	"id": 4,
+		// 	"result": {
+		// 		"code": 55555,
+		// 		"message": "Task Flow execution command send to Commander."
+		// 	}
+		// }
 
 
 
+		// Notification of end of execution of a taskflow
+		//    For the moment, this notification can only been received through a MQTT topic: computer/+/software/sc-task-engine/showcontrol/taskFlow_status
 
-
-
-// Notification of end of execution of a taskflow
-//    For the moment, this notification can only been received through a MQTT topic: computer/+/software/sc-task-engine/showcontrol/taskFlow_status
-
-// {
-// 	"jsonrpc": "2.0",
-// 	"id": "26817de3-fc45-18d0-6d58-c4a1e1f21bb1",
-// 	"result": {
-// 		"method": "Task.Execute",
-// 		"code": 0,
-// 		"message": "Task executed successfully",
-// 		"data": "OK"
-// 	}
-// }
+		// {
+		// 	"jsonrpc": "2.0",
+		// 	"id": "26817de3-fc45-18d0-6d58-c4a1e1f21bb1",
+		// 	"result": {
+		// 		"method": "Task.Execute",
+		// 		"code": 0,
+		// 		"message": "Task executed successfully",
+		// 		"data": "OK"
+		// 	}
+		// }
 
 
 		// this.mqttClient.publish(topic, payload, { qos: qos, retain: retain })
