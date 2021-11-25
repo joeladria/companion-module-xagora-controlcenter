@@ -270,18 +270,22 @@ class mqtt_instance extends instance_skel {
 			}
 		}
 		var tfLibrary;
-
+var zeParent = this;
 		const req = http.request(options, res => {
 			this.log('debug', `statusCode: ${res.statusCode}`)
 
 			res.on('data', d => {
 				// process.stdout.write(d)
-				var taskflows = JSON.parse(d);
-				console.log(taskflows.result.data);
+				try {
+					var returnedJSON = JSON.parse(d);
+				} catch(e) {
+					zeParent.log('warn', e); // error in the above string (in this case, yes)!
+				}
 				
-				taskflows.result.data.forEach((element) => { tfLibrary.push( { id: element.internalName, label: element.displayName }) } );
+				zeParent.log('warn', 'why i no warn?')
+				returnedJSON.result.data.forEach((element) => { tfLibrary.push( { id: element.internalName, label: element.displayName }); zeParent.log('warn', 'added element: ' + element.displayName) } );
 				
-				tfLibrary = 'hello'
+			
 			})
 		})
 
@@ -289,10 +293,10 @@ class mqtt_instance extends instance_skel {
 			console.error(error)
 		})
 	
-		// req.write(data)
+		req.write(data)
 		req.end()
 
-		this.log('warn', tfLibrary)
+		// this.log('warn', tfLibrary)
 		// var tfLibrary = [
 		// 	{ id: 'joelTest', label: 'joelTest' }
 		// ];
