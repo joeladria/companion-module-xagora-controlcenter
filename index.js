@@ -252,49 +252,80 @@ class mqtt_instance extends instance_skel {
 		// get the taskflows
 
 		// curl -H 'Content-Type: application/json' -d '' http://cc-test-01:3030/sc-datastore/projectData/taskFlow
+		// const http = require('http')
 
-
-	
-
-		const http = require('http')
-		const data = JSON.stringify({"jsonrpc": "2.0","method": "TaskFlow.Array","params": {"projectIdentifier": this.config.topic, "autoPopulate": true},"id": 2})
-
-		const options = {
-			hostname: this.config.datastore,
-			port: 3030,
-			path: '/sc-datastore/projectData/taskFlow',
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'Content-Length': data.length
-			}
-		}
+		// const options = {
+		// 	hostname: this.config.datastore,
+		// 	port: 3030,
+		// 	path: '/sc-datastore/projectData/taskFlow',
+		// 	method: 'POST',
+		// 	headers: {
+		// 		'Content-Type': 'application/json',
+		// 		'Content-Length': data.length
+		// 	}
+		// }
 		var tfLibrary;
-var zeParent = this;
-		const req = http.request(options, res => {
-			this.log('debug', `statusCode: ${res.statusCode}`)
+		var zeParent = this;
 
-			res.on('data', d => {
-				// process.stdout.write(d)
+		const axios = require('axios')
+		const data = JSON.stringify({ "jsonrpc": "2.0", "method": "TaskFlow.Array", "params": { "projectIdentifier": this.config.topic, "autoPopulate": true }, "id": 2 })
+		const url = 'http://' + this.config.datastore + ':3030' + '/sc-datastore/projectData/taskFlow';
+
+		var tfLibrary = [];
+
+		axios
+			.post(url, data, { headers: { 'Content-Type': 'application/json' } })
+			.then(res => {
 				try {
-					var returnedJSON = JSON.parse(d);
-				} catch(e) {
-					zeParent.log('warn', e); // error in the above string (in this case, yes)!
+					// var returnedJSON = JSON.parse(res.data).result.data;
+					var returnedJSON = res.data.result.data;
+					// console.log(returnedJSON);
+					// zeParent.log('warn', returnedJSON)
+					returnedJSON.forEach((element) => {
+						tfLibrary.push({ id: element.internalName, label: element.displayName });
+						// zeParent.log('warn', 'added element: ' + element.displayName) 
+					});
+					console.log(tfLibrary);
+				} catch (e) {
+					// zeParent.log('warn', e); // error in the above string (in this case, yes)!
+					// zeParent.log('error', "why is this not working?")
 				}
-				
-				zeParent.log('warn', 'why i no warn?')
-				returnedJSON.result.data.forEach((element) => { tfLibrary.push( { id: element.internalName, label: element.displayName }); zeParent.log('warn', 'added element: ' + element.displayName) } );
-				
-			
+		
+				// zeParent.log('warn', `statusCode: ${res.status}`)
+				// console.log(res)
 			})
-		})
+			.catch(error => {
+		
+				console.error(error)
+			})
+		
+		
 
-		req.on('error', error => {
-			console.error(error)
-		})
-	
-		req.write(data)
-		req.end()
+
+		// const req = http.request(options, res => {
+		// 	this.log('debug', `statusCode: ${res.statusCode}`)
+
+		// 	res.on('data', d => {
+		// 		// process.stdout.write(d)
+		// 		try {
+		// 			var returnedJSON = JSON.parse(d);
+		// 		} catch (e) {
+		// 			// zeParent.log('warn', e); // error in the above string (in this case, yes)!
+		// 		}
+
+		// 		zeParent.log('warn', 'why i no warn?')
+		// 		// returnedJSON.result.data.forEach((element) => { tfLibrary.push( { id: element.internalName, label: element.displayName }); zeParent.log('warn', 'added element: ' + element.displayName) } );
+
+
+		// 	})
+		// })
+
+		// req.on('error', error => {
+		// 	console.error(error)
+		// })
+
+		// req.write(data)
+		// req.end()
 
 		// this.log('warn', tfLibrary)
 		// var tfLibrary = [
